@@ -47,6 +47,9 @@ pub static COLRV0V1: &[u8] = include_bytes!("../test_data/ttf/test_glyphs-glyf_c
 pub static COLRV0V1_VARIABLE: &[u8] =
     include_bytes!("../test_data/ttf/test_glyphs-glyf_colr_1_variable.ttf");
 
+pub static NOTO_COLOR_EMOJI_BITMAP: &[u8] =
+    include_bytes!("../test_data/ttf/NotoColorEmoji-Regular.ttf");
+
 pub mod post {
 
     #[rustfmt::skip]

@@ -399,7 +399,16 @@ impl<'a> ColorGlyphCollection<'a> {
 #[cfg(test)]
 mod tests {
 
+    use std::{
+        fs::File,
+        io::{Read, Write},
+    };
+
     use crate::{prelude::LocationRef, MetadataProvider};
+    use raw::{
+        tables::bitmap::{BitmapContent, BitmapDataFormat},
+        TableProvider,
+    };
     use read_fonts::{types::BoundingBox, FontRef};
 
     use super::{Brush, ColorPainter, CompositeMode, GlyphId, Transform};
@@ -457,5 +466,67 @@ mod tests {
             .paint(LocationRef::default(), &mut color_painter);
         // Expected to fail with an error as the glyph contains a paint cycle.
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn retrieve_sbix() {
+        let mut f = File::open("/System/Library/Fonts/Apple Color Emoji.ttc").unwrap();
+        let mut font_buffer = Vec::new();
+        f.read_to_end(&mut font_buffer).unwrap();
+
+        let font = FontRef::from_index(&font_buffer, 0).unwrap();
+        let glyph_id = font.charmap().map(0x231A as u32).unwrap();
+
+        let last_strike = font
+            .sbix()
+            .unwrap()
+            .strikes()
+            .iter()
+            .last()
+            .unwrap()
+            .unwrap();
+
+        let glyph_data = last_strike.glyph_data(glyph_id).unwrap().unwrap();
+        let mut f = File::options()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open("watch.png")
+            .unwrap();
+        let _ = f.write_all(glyph_data.data());
+    }
+
+    #[test]
+    fn retrieve_cbdt_cblc() {
+        let bitmap_font = font_test_data::NOTO_COLOR_EMOJI_BITMAP;
+        let font = FontRef::new(bitmap_font).unwrap();
+
+        let trumpet_gid = font.charmap().map('🎺').unwrap();
+
+        let cblc = font.cblc().unwrap();
+        assert_eq!(cblc.num_sizes(), 1u32);
+        let strike = &cblc.bitmap_sizes()[0];
+
+        let location = strike.location(cblc.offset_data(), trumpet_gid).unwrap();
+        println!(
+            "Bit depth: {:?}, format: {:?}",
+            strike.bit_depth(),
+            location.format
+        );
+
+        let bitmap_data = font.cbdt().unwrap().data(&location).unwrap();
+
+        let mut f = File::options()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open("trumpet.png")
+            .unwrap();
+        if let BitmapContent::Data(BitmapDataFormat::Png, png_buffer) = bitmap_data.content {
+            println!("Dumping trumpet png.");
+            let _ = f.write_all(png_buffer);
+        } else {
+            println!("Didn't find PNG data.");
+        }
     }
 }
