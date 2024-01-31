@@ -509,8 +509,10 @@ mod tests {
 
         let location = strike.location(cblc.offset_data(), trumpet_gid).unwrap();
         println!(
-            "Bit depth: {:?}, format: {:?}",
+            "Bit depth: {:?}, ppem_x: {:?}, ppem_y: {:?}, format: {:?}",
             strike.bit_depth(),
+            strike.ppem_x,
+            strike.ppem_y,
             location.format
         );
 
