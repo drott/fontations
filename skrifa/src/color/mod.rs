@@ -406,7 +406,7 @@ mod tests {
 
     use crate::{prelude::LocationRef, MetadataProvider};
     use raw::{
-        tables::bitmap::{BitmapContent, BitmapDataFormat},
+        tables::bitmap::{BigGlyphMetrics, BitmapContent, BitmapDataFormat, BitmapMetrics},
         TableProvider,
     };
     use read_fonts::{types::BoundingBox, FontRef};
@@ -522,11 +522,28 @@ mod tests {
             .create_new(true)
             .open("trumpet.png")
             .unwrap();
+
         if let BitmapContent::Data(BitmapDataFormat::Png, png_buffer) = bitmap_data.content {
-            println!("Dumping trumpet png.");
             let _ = f.write_all(png_buffer);
         } else {
             println!("Didn't find PNG data.");
         }
+
+        match bitmap_data.metrics {
+            BitmapMetrics::Big(big_metrics) => {
+                println!("big metrics {:?}", big_metrics)
+            }
+            BitmapMetrics::Small(small_metrics) => {
+                println!("small metrics {:?}", small_metrics)
+            }
+        }
+        let trumpet_hmtx_advance = &font.hmtx().unwrap().h_metrics()[trumpet_gid.to_u16() as usize];
+        let font_upem = font.head().unwrap().units_per_em();
+        println!(
+            "HMTX advance: {:?}, upem {:?}, advance/upem * 128: {:?}",
+            trumpet_hmtx_advance,
+            font_upem,
+            trumpet_hmtx_advance.advance() as f32 / font_upem as f32 * 128.0
+        );
     }
 }
