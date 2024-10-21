@@ -1432,4 +1432,24 @@ mod tests {
             .unwrap();
         assert_eq!(advance, 11.0);
     }
+
+    #[test]
+    fn cff_add_overflow() {
+        let font = FontRef::new(font_test_data::CFF_ADD_OVERFLOW).unwrap();
+        let outlines = font.outline_glyphs();
+        let coords = [NormalizedCoord::from_f32(0.5)];
+        let hinter = HintingInstance::new(
+            &outlines,
+            Size::new(24.0),
+            LocationRef::new(&coords),
+            HintingOptions::default(),
+        )
+        .unwrap();
+        let gid = GlyphId::new(1);
+        let outline = outlines.get(gid).unwrap();
+        outline
+            .draw(&hinter, &mut super::pen::NullPen)
+            .unwrap()
+            .advance_width;
+    }
 }
