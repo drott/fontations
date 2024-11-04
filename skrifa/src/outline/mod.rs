@@ -681,6 +681,7 @@ mod tests {
     use super::*;
     use crate::{instance::Location, MetadataProvider};
     use kurbo::{Affine, BezPath, PathEl, Point};
+    use raw::tables::glyf::Glyph;
     use read_fonts::{types::GlyphId, FontRef, TableProvider};
 
     use pretty_assertions::assert_eq;
@@ -1431,5 +1432,37 @@ mod tests {
             .advance_width
             .unwrap();
         assert_eq!(advance, 11.0);
+    }
+
+    #[test]
+    fn times_new_roman_mod() {
+        let font = FontRef::new(font_test_data::TIMES_NEW_ROMAN_MOD).unwrap();
+        let outlines = font.outline_glyphs();
+
+        let hinting_target = Target::Smooth {
+            mode: SmoothMode::Light,
+            symmetric_rendering: true,
+            preserve_linear_metrics: false,
+        };
+
+        let engine_type = Engine::Auto(None);
+
+        let hinter = HintingInstance::new(
+            &outlines,
+            Size::new(42.5),
+            LocationRef::default(),
+            HintingOptions {
+                engine: engine_type,
+                target: hinting_target,
+            },
+        )
+        .unwrap();
+
+        let outline = outlines.get(GlyphId::new(672)).unwrap();
+        let _advance = outline
+            .draw(&hinter, &mut super::pen::NullPen)
+            .unwrap()
+            .advance_width
+            .unwrap();
     }
 }

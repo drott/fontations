@@ -81,6 +81,8 @@ pub static NOTOSERIF_AUTOHINT_SHAPING: &[u8] =
 
 pub static TTHINT_SUBSET: &[u8] = include_bytes!("../test_data/ttf/tthint_subset.ttf");
 
+pub static TIMES_NEW_ROMAN_MOD: &[u8] = include_bytes!("../test_data/ttf/HebraicoProBr_Mar_Morto.ttf");
+
 pub static VORG: &[u8] = include_bytes!("../test_data/ttf/vorg.ttf");
 
 pub static AHEM: &[u8] = include_bytes!("../test_data/ttf/ahem.ttf");
