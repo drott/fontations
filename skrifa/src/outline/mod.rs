@@ -1394,6 +1394,19 @@ mod tests {
     }
 
     #[test]
+    fn savoye_panic() {
+        let font = FontRef::new(font_test_data::SAVOYE).unwrap();
+        let glyphs = font.outline_glyphs();
+        let _hinting = HintingInstance::new(
+            &glyphs,
+            Size::new(16.0),
+            LocationRef::default(),
+            HintingOptions::default(),
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn empty_glyph_advance_unhinted() {
         let font = FontRef::new(font_test_data::HVAR_WITH_TRUNCATED_ADVANCE_INDEX_MAP).unwrap();
         let outlines = font.outline_glyphs();
