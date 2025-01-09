@@ -694,7 +694,7 @@ pub(super) fn with_glyf_memory<R>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{instance::Location, MetadataProvider};
+    use crate::{instance::Location, metrics::GlyphMetrics, MetadataProvider};
     use kurbo::{Affine, BezPath, PathEl, Point};
     use read_fonts::{types::GlyphId, FontRef, TableProvider};
 
@@ -1408,6 +1408,50 @@ mod tests {
         glyph
             .draw(DrawSettings::hinted(&hinting, true), &mut BezPen::default())
             .unwrap();
+    }
+
+    #[test]
+    fn vara_hinted_advances() {
+        let font = FontRef::new(font_test_data::PROXIMA_VARA).unwrap();
+        let glyphs = font.outline_glyphs();
+        const FONT_SIZE: f32 = 120.0;
+        let location = font.axes().location([("wdth", 100.0), ("wght", 400.0)]);
+        let glyph_ids = [1, 19, 83, 113, 110, 119];
+        let hinting = HintingInstance::new(
+            &glyphs,
+            Size::new(FONT_SIZE),
+            &location,
+            HintingOptions::from(Engine::Interpreter),
+        )
+        .unwrap();
+        for gid in glyph_ids {
+            if let Some(glyph) = glyphs.get(GlyphId::new(gid)) {
+                let hinted_drawn = glyph
+                    .draw(DrawSettings::hinted(&hinting, true), &mut BezPen::default())
+                    .ok();
+
+                let gm_advance = GlyphMetrics::new(&font, Size::new(FONT_SIZE), &location)
+                    .advance_width(GlyphId::from(gid));
+
+                let unhinted_drawn = glyph
+                    .draw(
+                        DrawSettings::unhinted(Size::new(FONT_SIZE), &location),
+                        &mut BezPen::default(),
+                    )
+                    .ok();
+                if let Some(drawn_metrics) = hinted_drawn {
+                    let mut adjusted_unhintend = None;
+                    if let Some(unhinted_metrics) = unhinted_drawn {
+                        adjusted_unhintend = unhinted_metrics.advance_width;
+                    }
+                    println!("Gid: {:?}, font size: {:?} adjusted hinted advance: {:?} vs. adjusted unhinted: {:?}, glyph metrics advance: {:?} - diff: {:?}", gid, FONT_SIZE, drawn_metrics.advance_width, adjusted_unhintend, gm_advance, drawn_metrics.advance_width.unwrap() - gm_advance.unwrap());
+                } else {
+                    println!("No adjusted metrics for gid {:?}", gid);
+                }
+            } else {
+                println!("No glyph for gid {:?}", gid);
+            }
+        }
     }
 
     #[test]

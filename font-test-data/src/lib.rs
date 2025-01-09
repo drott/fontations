@@ -47,6 +47,8 @@ pub static CBDT: &[u8] = include_bytes!("../test_data/ttf/cbdt.ttf");
 pub static HVAR_WITH_TRUNCATED_ADVANCE_INDEX_MAP: &[u8] =
     include_bytes!("../test_data/ttf/hvar_with_truncated_adv_index_map.ttf");
 
+pub static PROXIMA_VARA: &[u8] = include_bytes!("../test_data/ttf/Proxima_Vara.ttf");
+
 pub static COLRV0V1: &[u8] = include_bytes!("../test_data/ttf/test_glyphs-glyf_colr_1.ttf");
 
 pub static COLRV0V1_VARIABLE: &[u8] =
